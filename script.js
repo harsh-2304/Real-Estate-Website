@@ -1088,245 +1088,254 @@ function showToast(msg) {
 }
 
 /* ==========================================================================
-   10. ULTRA-HD MULTI-SCENE 3D WEBGL RENDER ENGINE
+   10. GLOBAL 3D WEBGL ULTRA-HD MULTI-SCENE ENGINE (FAIL-SAFE ARCHITECTURE)
    ========================================================================== */
 let globalScene, globalCamera, globalRenderer;
 let sceneGroups = {};
 let mousePos = { x: 0, y: 0, targetX: 0, targetY: 0 };
 
 function initGlobalUltraHD3DEngine() {
-  if (typeof THREE === 'undefined') return;
-
   const canvas = document.getElementById('luxuryGlobal3DCanvas');
   if (!canvas) return;
 
-  globalScene = new THREE.Scene();
-  globalCamera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-  globalCamera.position.z = 30;
-
-  globalRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-  globalRenderer.setSize(window.innerWidth, window.innerHeight);
-  globalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  // Ambient & Dynamic Point Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-  globalScene.add(ambientLight);
-
-  const goldLight = new THREE.PointLight(0xffdf78, 2.5, 100);
-  goldLight.position.set(10, 20, 25);
-  globalScene.add(goldLight);
-
-  // --- SCENE 1: HOME (3D Flowing Gold Silk Waves & Stardust) ---
-  const homeGroup = new THREE.Group();
-  const waveGeo = new THREE.PlaneGeometry(80, 50, 50, 50);
-  const waveMat = new THREE.MeshPhongMaterial({
-    color: 0xd4af37,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.28,
-    shininess: 90
-  });
-  const wavePlane = new THREE.Mesh(waveGeo, waveMat);
-  wavePlane.rotation.x = -Math.PI / 2.6;
-  wavePlane.position.set(0, -10, -5);
-  homeGroup.add(wavePlane);
-
-  const dustGeo = new THREE.BufferGeometry();
-  const dustPos = new Float32Array(200 * 3);
-  for (let i = 0; i < 200 * 3; i += 3) {
-    dustPos[i] = (Math.random() - 0.5) * 80;
-    dustPos[i+1] = (Math.random() - 0.5) * 50;
-    dustPos[i+2] = (Math.random() - 0.5) * 40;
+  // Fallback to Native 2D/3D Canvas if Three.js is not loaded
+  if (typeof THREE === 'undefined') {
+    initNativeFallbackCanvas(canvas);
+    return;
   }
-  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-  const dustPoints = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.55, color: 0xffe27a, transparent: true, opacity: 0.7 }));
-  homeGroup.add(dustPoints);
-  globalScene.add(homeGroup);
-  sceneGroups['home'] = { group: homeGroup, update: (t) => {
-    const pos = waveGeo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const u = pos.getX(i);
-      const v = pos.getY(i);
-      pos.setZ(i, Math.sin(u * 0.2 + t) * Math.cos(v * 0.2 + t) * 3.2);
+
+  try {
+    globalScene = new THREE.Scene();
+    globalCamera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    globalCamera.position.z = 28;
+
+    globalRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
+    globalRenderer.setSize(window.innerWidth, window.innerHeight);
+    globalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Ambient Lighting
+    globalScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const goldLight = new THREE.PointLight(0xffe27a, 3, 100);
+    goldLight.position.set(10, 20, 25);
+    globalScene.add(goldLight);
+
+    // --- 1. HOME SCENE: Flowing Gold Liquid Silk Waves ---
+    const homeGroup = new THREE.Group();
+    const waveGeo = new THREE.PlaneGeometry(80, 50, 50, 50);
+    const waveMat = new THREE.MeshPhongMaterial({
+      color: 0xd4af37,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.32,
+      shininess: 90
+    });
+    const wavePlane = new THREE.Mesh(waveGeo, waveMat);
+    wavePlane.rotation.x = -Math.PI / 2.6;
+    wavePlane.position.set(0, -10, -5);
+    homeGroup.add(wavePlane);
+
+    // Floating Stardust
+    const dustGeo = new THREE.BufferGeometry();
+    const dustPos = new Float32Array(220 * 3);
+    for (let i = 0; i < 220 * 3; i += 3) {
+      dustPos[i] = (Math.random() - 0.5) * 80;
+      dustPos[i+1] = (Math.random() - 0.5) * 50;
+      dustPos[i+2] = (Math.random() - 0.5) * 40;
     }
-    pos.needsUpdate = true;
-    dustPoints.rotation.y = t * 0.05;
-  }};
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    const dustPoints = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.6, color: 0xffe27a, transparent: true, opacity: 0.8 }));
+    homeGroup.add(dustPoints);
+    globalScene.add(homeGroup);
+    sceneGroups['home'] = { group: homeGroup, update: (t) => {
+      const pos = waveGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const u = pos.getX(i);
+        const v = pos.getY(i);
+        pos.setZ(i, Math.sin(u * 0.2 + t) * Math.cos(v * 0.2 + t) * 3.2);
+      }
+      pos.needsUpdate = true;
+      dustPoints.rotation.y = t * 0.05;
+    }};
 
-  // --- SCENE 2: PORTFOLIO (3D Floating Architectural Crystals) ---
-  const portGroup = new THREE.Group();
-  const crystalEdges = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(3.5, 0));
-  for (let i = 0; i < 18; i++) {
-    const crystal = new THREE.LineSegments(crystalEdges, new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.35 }));
-    crystal.position.set((Math.random() - 0.5) * 55, (Math.random() - 0.5) * 35, (Math.random() - 0.5) * 30);
-    crystal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-    portGroup.add(crystal);
-  }
-  portGroup.visible = false;
-  globalScene.add(portGroup);
-  sceneGroups['portfolio'] = { group: portGroup, update: () => {
-    portGroup.rotation.y += 0.003;
-    portGroup.rotation.x += 0.002;
-  }};
+    // --- 2. PORTFOLIO SCENE: Floating Architectural Wireframe Crystals ---
+    const portGroup = new THREE.Group();
+    const crystalEdges = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(3.5, 0));
+    for (let i = 0; i < 20; i++) {
+      const crystal = new THREE.LineSegments(crystalEdges, new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.4 }));
+      crystal.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 35, (Math.random() - 0.5) * 30);
+      crystal.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      portGroup.add(crystal);
+    }
+    portGroup.visible = false;
+    globalScene.add(portGroup);
+    sceneGroups['portfolio'] = { group: portGroup, update: () => {
+      portGroup.rotation.y += 0.003;
+      portGroup.rotation.x += 0.002;
+    }};
 
-  // --- SCENE 3: VILLA DETAIL (3D Gold Nebula Dust Vortex) ---
-  const detailGroup = new THREE.Group();
-  const vortexGeo = new THREE.BufferGeometry();
-  const vortexPos = new Float32Array(350 * 3);
-  for (let i = 0; i < 350 * 3; i += 3) {
-    const angle = Math.random() * Math.PI * 2;
-    const rad = Math.random() * 25 + 5;
-    vortexPos[i] = Math.cos(angle) * rad;
-    vortexPos[i+1] = (Math.random() - 0.5) * 30;
-    vortexPos[i+2] = Math.sin(angle) * rad;
-  }
-  vortexGeo.setAttribute('position', new THREE.BufferAttribute(vortexPos, 3));
-  const vortexPoints = new THREE.Points(vortexGeo, new THREE.PointsMaterial({ size: 0.6, color: 0xffd700, transparent: true, opacity: 0.7 }));
-  detailGroup.add(vortexPoints);
-  detailGroup.visible = false;
-  globalScene.add(detailGroup);
-  sceneGroups['villa-detail'] = { group: detailGroup, update: () => {
-    vortexPoints.rotation.y += 0.005;
-  }};
+    // --- 3. VILLA DETAIL: 3D Gold Dust Vortex ---
+    const detailGroup = new THREE.Group();
+    const vortexGeo = new THREE.BufferGeometry();
+    const vortexPos = new Float32Array(350 * 3);
+    for (let i = 0; i < 350 * 3; i += 3) {
+      const angle = Math.random() * Math.PI * 2;
+      const rad = Math.random() * 25 + 5;
+      vortexPos[i] = Math.cos(angle) * rad;
+      vortexPos[i+1] = (Math.random() - 0.5) * 30;
+      vortexPos[i+2] = Math.sin(angle) * rad;
+    }
+    vortexGeo.setAttribute('position', new THREE.BufferAttribute(vortexPos, 3));
+    const vortexPoints = new THREE.Points(vortexGeo, new THREE.PointsMaterial({ size: 0.65, color: 0xffd700, transparent: true, opacity: 0.75 }));
+    detailGroup.add(vortexPoints);
+    detailGroup.visible = false;
+    globalScene.add(detailGroup);
+    sceneGroups['villa-detail'] = { group: detailGroup, update: () => {
+      vortexPoints.rotation.y += 0.006;
+    }};
 
-  // --- SCENE 4: PRIVATE ACCESS (3D Gyroscopic VIP Vault Rings) ---
-  const consultGroup = new THREE.Group();
-  for (let i = 0; i < 3; i++) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(12 + i * 2.5, 0.15, 16, 80),
+    // --- 4. PRIVATE ACCESS (VIP VAULT): Gyroscopic Vault Core ---
+    const consultGroup = new THREE.Group();
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(12 + i * 2.5, 0.16, 16, 80),
+        new THREE.MeshBasicMaterial({ color: 0xd4af37, wireframe: true, transparent: true, opacity: 0.35 })
+      );
+      consultGroup.add(ring);
+    }
+    const coreMesh = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(7, 1),
+      new THREE.MeshBasicMaterial({ color: 0xfff0ad, wireframe: true, transparent: true, opacity: 0.45 })
+    );
+    consultGroup.add(coreMesh);
+    consultGroup.visible = false;
+    globalScene.add(consultGroup);
+    sceneGroups['consultation'] = { group: consultGroup, update: () => {
+      consultGroup.children[0].rotation.x += 0.005;
+      consultGroup.children[1].rotation.y += 0.007;
+      consultGroup.children[2].rotation.z += 0.006;
+      coreMesh.rotation.x -= 0.009;
+    }};
+
+    // --- 5. PROPERTIES: Global Hologram Coordinate Globe ---
+    const propGroup = new THREE.Group();
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(18, 28, 28),
       new THREE.MeshBasicMaterial({ color: 0xd4af37, wireframe: true, transparent: true, opacity: 0.3 })
     );
-    consultGroup.add(ring);
-  }
-  const coreMesh = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(7, 1),
-    new THREE.MeshBasicMaterial({ color: 0xfff0ad, wireframe: true, transparent: true, opacity: 0.4 })
-  );
-  consultGroup.add(coreMesh);
-  consultGroup.visible = false;
-  globalScene.add(consultGroup);
-  sceneGroups['consultation'] = { group: consultGroup, update: () => {
-    consultGroup.children[0].rotation.x += 0.005;
-    consultGroup.children[1].rotation.y += 0.007;
-    consultGroup.children[2].rotation.z += 0.006;
-    coreMesh.rotation.x -= 0.009;
-  }};
+    globe.position.set(12, 0, -5);
+    propGroup.add(globe);
+    propGroup.visible = false;
+    globalScene.add(propGroup);
+    sceneGroups['properties'] = { group: propGroup, update: () => {
+      globe.rotation.y += 0.004;
+    }};
 
-  // --- SCENE 5: PROPERTIES (3D Global Hologram Coordinate Globe) ---
-  const propGroup = new THREE.Group();
-  const globe = new THREE.Mesh(
-    new THREE.SphereGeometry(18, 28, 28),
-    new THREE.MeshBasicMaterial({ color: 0xd4af37, wireframe: true, transparent: true, opacity: 0.25 })
-  );
-  globe.position.set(12, 0, -5);
-  propGroup.add(globe);
-  propGroup.visible = false;
-  globalScene.add(propGroup);
-  sceneGroups['properties'] = { group: propGroup, update: () => {
-    globe.rotation.y += 0.004;
-  }};
+    // --- 6. MORTGAGE STUDIO: Quantum Financial Sine Terrain ---
+    const calcGroup = new THREE.Group();
+    const gridGeo = new THREE.PlaneGeometry(80, 50, 40, 30);
+    const gridTerrain = new THREE.Mesh(gridGeo, new THREE.MeshBasicMaterial({ color: 0xd4af37, wireframe: true, transparent: true, opacity: 0.32 }));
+    gridTerrain.rotation.x = -Math.PI / 2.7;
+    gridTerrain.position.set(0, -8, -5);
+    calcGroup.add(gridTerrain);
+    calcGroup.visible = false;
+    globalScene.add(calcGroup);
+    sceneGroups['calculator'] = { group: calcGroup, update: (t) => {
+      const pos = gridGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        pos.setZ(i, Math.sin(pos.getX(i) * 0.25 + t * 2) * 2.8);
+      }
+      pos.needsUpdate = true;
+    }};
 
-  // --- SCENE 6: MORTGAGE STUDIO (3D Quantum Financial Sine Matrix) ---
-  const calcGroup = new THREE.Group();
-  const gridGeo = new THREE.PlaneGeometry(80, 50, 40, 30);
-  const gridTerrain = new THREE.Mesh(gridGeo, new THREE.MeshBasicMaterial({ color: 0xd4af37, wireframe: true, transparent: true, opacity: 0.28 }));
-  gridTerrain.rotation.x = -Math.PI / 2.7;
-  gridTerrain.position.set(0, -8, -5);
-  calcGroup.add(gridTerrain);
-  calcGroup.visible = false;
-  globalScene.add(calcGroup);
-  sceneGroups['calculator'] = { group: calcGroup, update: (t) => {
-    const pos = gridGeo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      pos.setZ(i, Math.sin(pos.getX(i) * 0.25 + t * 2) * 2.5);
+    // --- 7. ABOUT US: Concentric Astrolabe Rings ---
+    const aboutGroup = new THREE.Group();
+    for (let r = 7; r <= 22; r += 5) {
+      const ringMesh = new THREE.Mesh(
+        new THREE.RingGeometry(r, r + 0.2, 64),
+        new THREE.MeshBasicMaterial({ color: 0xd4af37, side: THREE.DoubleSide, transparent: true, opacity: 0.38 })
+      );
+      aboutGroup.add(ringMesh);
     }
-    pos.needsUpdate = true;
-  }};
+    aboutGroup.visible = false;
+    globalScene.add(aboutGroup);
+    sceneGroups['about'] = { group: aboutGroup, update: () => {
+      aboutGroup.children.forEach((r, idx) => {
+        r.rotation.x += 0.003 * (idx + 1);
+        r.rotation.y += 0.004 * (idx + 1);
+      });
+    }};
 
-  // --- SCENE 7: ABOUT US (3D Concentric Heritage Astrolabe Rings) ---
-  const aboutGroup = new THREE.Group();
-  for (let r = 7; r <= 22; r += 5) {
-    const ringMesh = new THREE.Mesh(
-      new THREE.RingGeometry(r, r + 0.2, 64),
-      new THREE.MeshBasicMaterial({ color: 0xd4af37, side: THREE.DoubleSide, transparent: true, opacity: 0.35 })
+    // --- 8. ADVISORS: Neural Constellation Network ---
+    const agentGroup = new THREE.Group();
+    const agentGeo = new THREE.BufferGeometry();
+    const agentPos = new Float32Array(80 * 3);
+    for (let i = 0; i < 80 * 3; i += 3) {
+      agentPos[i] = (Math.random() - 0.5) * 55;
+      agentPos[i+1] = (Math.random() - 0.5) * 40;
+      agentPos[i+2] = (Math.random() - 0.5) * 35;
+    }
+    agentGeo.setAttribute('position', new THREE.BufferAttribute(agentPos, 3));
+    const agentNodes = new THREE.Points(agentGeo, new THREE.PointsMaterial({ color: 0xffd700, size: 1.2 }));
+    agentGroup.add(agentNodes);
+    agentGroup.visible = false;
+    globalScene.add(agentGroup);
+    sceneGroups['agents'] = { group: agentGroup, update: () => {
+      agentGroup.rotation.y += 0.003;
+    }};
+
+    // --- 9. CONTACT: Holographic Transmission Radar ---
+    const contactGroup = new THREE.Group();
+    const radarTorus = new THREE.Mesh(
+      new THREE.TorusGeometry(15, 0.18, 16, 100),
+      new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.38 })
     );
-    aboutGroup.add(ringMesh);
-  }
-  aboutGroup.visible = false;
-  globalScene.add(aboutGroup);
-  sceneGroups['about'] = { group: aboutGroup, update: () => {
-    aboutGroup.children.forEach((r, idx) => {
-      r.rotation.x += 0.003 * (idx + 1);
-      r.rotation.y += 0.004 * (idx + 1);
+    radarTorus.position.set(10, 0, -5);
+    contactGroup.add(radarTorus);
+    contactGroup.visible = false;
+    globalScene.add(contactGroup);
+    sceneGroups['contact'] = { group: contactGroup, update: () => {
+      radarTorus.rotation.x += 0.015;
+      radarTorus.rotation.y += 0.012;
+    }};
+
+    // Mouse Interaction
+    window.addEventListener('mousemove', (e) => {
+      mousePos.targetX = (e.clientX / window.innerWidth) * 2 - 1;
+      mousePos.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
     });
-  }};
 
-  // --- SCENE 8: ADVISORS COUNCIL (3D Neural Constellation Network) ---
-  const agentGroup = new THREE.Group();
-  const agentGeo = new THREE.BufferGeometry();
-  const agentPos = new Float32Array(70 * 3);
-  for (let i = 0; i < 70 * 3; i += 3) {
-    agentPos[i] = (Math.random() - 0.5) * 55;
-    agentPos[i+1] = (Math.random() - 0.5) * 40;
-    agentPos[i+2] = (Math.random() - 0.5) * 35;
-  }
-  agentGeo.setAttribute('position', new THREE.BufferAttribute(agentPos, 3));
-  const agentNodes = new THREE.Points(agentGeo, new THREE.PointsMaterial({ color: 0xffd700, size: 1.1 }));
-  agentGroup.add(agentNodes);
-  agentGroup.visible = false;
-  globalScene.add(agentGroup);
-  sceneGroups['agents'] = { group: agentGroup, update: () => {
-    agentGroup.rotation.y += 0.003;
-  }};
+    window.addEventListener('resize', () => {
+      globalCamera.aspect = window.innerWidth / window.innerHeight;
+      globalCamera.updateProjectionMatrix();
+      globalRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-  // --- SCENE 9: CONTACT (3D Holographic Beacon Transmitter) ---
-  const contactGroup = new THREE.Group();
-  const radarTorus = new THREE.Mesh(
-    new THREE.TorusGeometry(15, 0.15, 16, 100),
-    new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.35 })
-  );
-  radarTorus.position.set(10, 0, -5);
-  contactGroup.add(radarTorus);
-  contactGroup.visible = false;
-  globalScene.add(contactGroup);
-  sceneGroups['contact'] = { group: contactGroup, update: () => {
-    radarTorus.rotation.x += 0.015;
-    radarTorus.rotation.y += 0.012;
-  }};
+    // Master 60FPS Render Loop
+    let clock = new THREE.Clock();
+    function renderLoop() {
+      const elapsed = clock.getElapsedTime();
 
-  // Mouse Physics
-  window.addEventListener('mousemove', (e) => {
-    mousePos.targetX = (e.clientX / window.innerWidth) * 2 - 1;
-    mousePos.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
-  });
+      // Smooth Camera Parallax
+      mousePos.x += (mousePos.targetX - mousePos.x) * 0.06;
+      mousePos.y += (mousePos.targetY - mousePos.y) * 0.06;
+      globalCamera.position.x = mousePos.x * 4;
+      globalCamera.position.y = mousePos.y * 3;
+      globalCamera.lookAt(0, 0, 0);
 
-  window.addEventListener('resize', () => {
-    globalCamera.aspect = window.innerWidth / window.innerHeight;
-    globalCamera.updateProjectionMatrix();
-    globalRenderer.setSize(window.innerWidth, window.innerHeight);
-  });
+      // Animate active group
+      if (sceneGroups[currentActive3DScene]) {
+        sceneGroups[currentActive3DScene].update(elapsed);
+      }
 
-  // 60 FPS Master Render Loop
-  let clock = new THREE.Clock();
-  function renderLoop() {
-    const elapsed = clock.getElapsedTime();
-
-    // Smooth Mouse Camera Parallax
-    mousePos.x += (mousePos.targetX - mousePos.x) * 0.06;
-    mousePos.y += (mousePos.targetY - mousePos.y) * 0.06;
-    globalCamera.position.x = mousePos.x * 4;
-    globalCamera.position.y = mousePos.y * 3;
-    globalCamera.lookAt(0, 0, 0);
-
-    // Update Active Scene
-    if (sceneGroups[currentActive3DScene]) {
-      sceneGroups[currentActive3DScene].update(elapsed);
+      globalRenderer.render(globalScene, globalCamera);
+      requestAnimationFrame(renderLoop);
     }
+    renderLoop();
 
-    globalRenderer.render(globalScene, globalCamera);
-    requestAnimationFrame(renderLoop);
+  } catch (err) {
+    console.warn("WebGL blocked, initializing native particle engine:", err);
+    initNativeFallbackCanvas(canvas);
   }
-  renderLoop();
 }
 
 function switch3DScene(targetId) {
@@ -1335,6 +1344,45 @@ function switch3DScene(targetId) {
       sceneGroups[id].group.visible = (id === targetId);
     }
   });
+}
+
+// Native GPU 2D/3D Fallback in case WebGL is constrained on mobile/GitHub Pages
+function initNativeFallbackCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    r: Math.random() * 2 + 1,
+    vx: (Math.random() - 0.5) * 0.6,
+    vy: (Math.random() - 0.5) * 0.6
+  }));
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = width;
+      if (p.x > width) p.x = 0;
+      if (p.y < 0) p.y = height;
+      if (p.y > height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
+      ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
 }
 
 /* ==========================================================================
