@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuxeVista | Luxury Real Estate & Residences</title>
+  
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Three.js (Ultra-HD 3D Engine) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Single Fullscreen Master 3D WebGL Canvas -->
+  <canvas id="luxuryGlobal3DCanvas"></canvas>
+
+  <!-- Header / Navigation -->
+  <header id="mainHeader">
+    <div class="nav-container">
+      <a href="#" class="logo" onclick="navigateTo('home')">
+        <i class="fa-solid fa-city"></i> LUXE<span>VISTA</span>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#" class="nav-item active" onclick="navigateTo('home')">Home</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('properties')">Properties</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('consultation')">Private Access</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('calculator')">Mortgage Studio</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('about')">About Us</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('agents')">Advisors</a></li>
+        <li><a href="#" class="nav-item" onclick="navigateTo('contact')">Contact</a></li>
+      </ul>
+
+      <div class="header-actions">
+        <!-- Theme Toggle (Light / Dark Mode) -->
+        <button class="theme-toggle-btn" id="themeToggleBtn" title="Switch Theme" onclick="toggleThemeMode()">
+          <i class="fa-solid fa-sun" id="themeIcon"></i>
+        </button>
+
+        <!-- Favorites Wishlist Button -->
+        <button class="fav-badge-btn" title="View Saved Wishlist" onclick="openFavoritesModal()">
+          <i class="fa-solid fa-heart"></i>
+          <span class="badge" id="favBadge">0</span>
+        </button>
+
+        <button class="btn-gold nav-cta" onclick="navigateTo('consultation')">
+          <i class="fa-solid fa-key"></i> VIP Private Access
+        </button>
+
+        <button class="hamburger-btn" id="menuToggle" aria-label="Toggle Navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       PAGE 1: HOME
+       ========================================================================== -->
+  <section id="page-home" class="page-section active">
+    <div class="hero">
+      <div class="hero-content">
+        <span class="subtitle-badge">Exclusive Luxury Living</span>
+        <h1>Find Your Architectural <span>Masterpiece</span></h1>
+        <p>Explore an elite portfolio of ultra-luxury villas, sky penthouses, and private waterfront estates across prime global locations.</p>
+        <div class="hero-btns">
+          <button class="btn-gold" onclick="navigateTo('portfolio')">
+            <i class="fa-solid fa-gem"></i> Explore Portfolio
+          </button>
+          <button class="btn-gold btn-outline" onclick="navigateTo('consultation')">
+            <i class="fa-solid fa-key"></i> Request Private Access
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Widget -->
+    <div class="search-widget">
+      <div class="search-tabs">
+        <button class="search-tab active" onclick="setSearchTab('buy', this)">Buy</button>
+        <button class="search-tab" onclick="setSearchTab('rent', this)">Rent</button>
+        <button class="search-tab" onclick="setSearchTab('commercial', this)">Commercial</button>
+      </div>
+      <div class="search-grid">
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="homeLocationInput" placeholder="e.g. Malibu, Lake Como, Santorini">
+        </div>
+        <div class="form-group">
+          <label>Property Type</label>
+          <select id="homeTypeSelect">
+            <option value="all">All Types</option>
+            <option value="Villa">Villa</option>
+            <option value="Penthouse">Penthouse</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Mansion">Mansion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Budget</label>
+          <select id="homePriceSelect">
+            <option value="all">Any Price</option>
+            <option value="15000000">Under $15.0M</option>
+            <option value="20000000">Under $20.0M</option>
+            <option value="30000000">Under $30.0M</option>
+          </select>
+        </div>
+        <button class="btn-gold search-submit-btn" onclick="executeHomeSearch()">
+          <i class="fa-solid fa-magnifying-glass"></i> Search
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Handpicked Listings</span>
+        <h2 class="section-title">Featured Global Residences</h2>
+        <p class="section-desc">Hand-selected high-end residences offering unparalleled luxury and design excellence worldwide.</p>
+      </div>
+
+      <div class="property-grid" id="homeFeaturedGrid"></div>
+
+      <!-- Stats Banner -->
+      <div class="stats-banner">
+        <div class="stat-item">
+          <h3>2,500+</h3>
+          <p>Homes Sold</p>
+        </div>
+        <div class="stat-item">
+          <h3>$4.8B+</h3>
+          <p>Sales Volume</p>
+        </div>
+        <div class="stat-item">
+          <h3>99.4%</h3>
+          <p>Client Satisfaction</p>
+        </div>
+        <div class="stat-item">
+          <h3>18+</h3>
+          <p>Global Awards</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE: EXCLUSIVE PORTFOLIO
+       ========================================================================== -->
+  <section id="page-portfolio" class="page-section">
+    <div class="container">
+      <button class="back-btn" onclick="navigateTo('home')">
+        <i class="fa-solid fa-arrow-left"></i> Back to Home
+      </button>
+
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Exclusive Luxury Portfolio</span>
+        <h2 class="section-title">Architectural Villa Showcase</h2>
+        <p class="section-desc">Click on any luxury villa to explore complete room decorations, high-end master suites, and bespoke interior introduction.</p>
+      </div>
+
+      <div class="portfolio-grid" id="portfolioVillasGrid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE: VILLA DETAIL SHOWCASE
+       ========================================================================== -->
+  <section id="page-villa-detail" class="page-section">
+    <div class="container">
+      <button class="back-btn" onclick="navigateTo('portfolio')">
+        <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+      </button>
+
+      <div id="villaDetailContent"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE: VIP PRIVATE ACCESS & VILLA RESERVATION
+       ========================================================================== -->
+  <section id="page-consultation" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Bespoke Concierge & Walkthrough</span>
+        <h2 class="section-title">Reserve VIP Private Access</h2>
+        <p class="section-desc">Select your target luxury residence, choose an exclusive date & time window, and experience white-glove private representation.</p>
+      </div>
+
+      <div class="consultation-wrapper">
+        <div class="consultation-form-card">
+          <form onsubmit="handleConsultationSubmit(event)">
+            <h3 class="form-section-heading">1. Select Luxury Residence & Senior Partner</h3>
+            <div class="form-row-2" style="margin-bottom: 1.5rem;">
+              <div class="form-group">
+                <label>Select Villa</label>
+                <select id="consultVillaSelect" onchange="updateConsultationPreview()" required>
+                  <option value="villa-lumina">Villa Lumina Coastal Sanctuary (Malibu, CA - $14.85M)</option>
+                  <option value="horizon-glass">The Horizon Glass Pavilion (Beverly Hills, CA - $18.20M)</option>
+                  <option value="villa-paradiso">Villa Paradiso Ocean Estate (Star Island, Miami - $21.50M)</option>
+                  <option value="alpine-ridge">Alpine Ridge Mountain Estate (Aspen, CO - $16.40M)</option>
+                  <option value="palazzo-serena">Palazzo Serena Mediterranean Manor (Palm Beach, FL - $19.80M)</option>
+                  <option value="skyline-monolith">The Skyline Monolith Villa (Hollywood Hills, CA - $23.50M)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Assigned Senior Fiduciary</label>
+                <select id="consultAdvisorSelect">
+                  <option value="Alexander Vance">Alexander Vance (Coastal California)</option>
+                  <option value="Sophia Sterling">Sophia Sterling (Sky Penthouses)</option>
+                  <option value="Lord Marcus Thorne">Lord Marcus Thorne (Private Islands & Estates)</option>
+                  <option value="Elena Rostova">Elena Rostova (Swiss Alpine Estates)</option>
+                  <option value="Tariq Al-Mansoor">Tariq Al-Mansoor (Dubai Waterfront Mansions)</option>
+                  <option value="Matteo Visconti">Matteo Visconti (Italian Lakes & Mediterranean)</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 class="form-section-heading">2. Walkthrough Experience Format</h3>
+            <div class="tour-type-grid">
+              <label class="tour-type-option">
+                <input type="radio" name="tourType" value="Private In-Person Tour" checked>
+                <div class="tour-type-box">
+                  <i class="fa-solid fa-house-chimney-user"></i>
+                  <strong>In-Person Tour</strong>
+                  <span>Private walkthrough on-site</span>
+                </div>
+              </label>
+              <label class="tour-type-option">
+                <input type="radio" name="tourType" value="3D Live Virtual Tour">
+                <div class="tour-type-box">
+                  <i class="fa-solid fa-vr-cardboard"></i>
+                  <strong>Virtual 3D Tour</strong>
+                  <span>High-def remote inspection</span>
+                </div>
+              </label>
+              <label class="tour-type-option">
+                <input type="radio" name="tourType" value="Executive Chauffeur Tour">
+                <div class="tour-type-box">
+                  <i class="fa-solid fa-car"></i>
+                  <strong>VIP Chauffeur</strong>
+                  <span>Luxury vehicle pickup service</span>
+                </div>
+              </label>
+            </div>
+
+            <h3 class="form-section-heading" style="margin-top: 1.5rem;">3. Preferred Date & Time Window</h3>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Tour Date</label>
+                <input type="date" id="consultDate" required>
+              </div>
+              <div class="form-group">
+                <label>Time Window</label>
+                <select id="consultTimeSlot" required>
+                  <option value="10:00 AM - 12:00 PM (Morning Private)">10:00 AM - 12:00 PM (Morning Private)</option>
+                  <option value="02:00 PM - 04:00 PM (Afternoon Detailed)">02:00 PM - 04:00 PM (Afternoon Detailed)</option>
+                  <option value="05:30 PM - 07:30 PM (Golden Hour Sunset VIP)">05:30 PM - 07:30 PM (Golden Hour Sunset VIP)</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 class="form-section-heading" style="margin-top: 1.5rem;">4. Client Profile Details</h3>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="consultClientName" required placeholder="Lord / Lady / Mr. John Doe">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="consultClientEmail" required placeholder="john.doe@example.com">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Direct Phone Number</label>
+                <input type="tel" id="consultClientPhone" required placeholder="+1 (555) 019-2834">
+              </div>
+              <div class="form-group">
+                <label>Estimated Purchasing Budget</label>
+                <select id="consultBudget">
+                  <option value="$10M - $15M">$10M - $15M</option>
+                  <option value="$15M - $25M">$15M - $25M</option>
+                  <option value="$25M+ Ultra Luxury">$25M+ Ultra Luxury</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Special Inquiries / Security / Helicopter Access</label>
+              <textarea id="consultNotes" placeholder="Provide any NDA preferences, helicopter arrival logistics, or bespoke catering requirements..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-gold" style="width: 100%; justify-content: center; margin-top: 1.5rem;">
+              <i class="fa-solid fa-lock"></i> Authorize & Request Private Access
+            </button>
+          </form>
+        </div>
+
+        <div class="consultation-preview-sidebar">
+          <div class="preview-sticky-card">
+            <span class="preview-badge">Selected Residence</span>
+            <div class="preview-img-wrap">
+              <img id="previewVillaImg" src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=80" alt="Villa Preview">
+            </div>
+            <div class="preview-body">
+              <h4 id="previewVillaTitle">Villa Lumina Coastal Sanctuary</h4>
+              <p class="preview-loc" id="previewVillaLoc"><i class="fa-solid fa-location-dot"></i> Malibu, California</p>
+              <div class="preview-price" id="previewVillaPrice">$14,850,000</div>
+              
+              <div class="preview-specs" id="previewVillaSpecs">
+                <span><i class="fa-solid fa-bed"></i> 6 Beds</span>
+                <span><i class="fa-solid fa-bath"></i> 8 Baths</span>
+                <span><i class="fa-solid fa-ruler-combined"></i> 9,400 sq ft</span>
+              </div>
+
+              <div class="consult-perks">
+                <h5><i class="fa-solid fa-shield-halved"></i> LuxeVista White-Glove Guarantee</h5>
+                <ul>
+                  <li><i class="fa-solid fa-check"></i> Private 1-on-1 Senior Partner Guidance</li>
+                  <li><i class="fa-solid fa-check"></i> Strict Buyer Confidentiality & NDA Option</li>
+                  <li><i class="fa-solid fa-check"></i> Complete Architectural Blueprint Access</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE 2: PROPERTIES (ALL LISTINGS)
+       ========================================================================== -->
+  <section id="page-properties" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Full Catalogue</span>
+        <h2 class="section-title">Explore All Properties</h2>
+        <p class="section-desc">Filter through our active listings of premium villas, modern studios, and waterfront mansions.</p>
+      </div>
+
+      <div class="filter-box">
+        <div class="filter-box-grid">
+          <div class="form-group">
+            <label>Keyword Search</label>
+            <input type="text" id="propSearchInput" placeholder="City, title or specs..." onkeyup="applyPropertyFilters()">
+          </div>
+          <div class="form-group">
+            <label>Type Filter</label>
+            <select id="propTypeSelect" onchange="applyPropertyFilters()">
+              <option value="all">All Categories</option>
+              <option value="Villa">Villa</option>
+              <option value="Penthouse">Penthouse</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Mansion">Mansion</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bedrooms</label>
+            <select id="propBedsSelect" onchange="applyPropertyFilters()">
+              <option value="all">Any Bedrooms</option>
+              <option value="2">2+ Bedrooms</option>
+              <option value="3">3+ Bedrooms</option>
+              <option value="4">4+ Bedrooms</option>
+              <option value="5">5+ Bedrooms</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sort By</label>
+            <select id="propSortSelect" onchange="applyPropertyFilters()">
+              <option value="featured">Featured First</option>
+              <option value="low-high">Price: Low to High</option>
+              <option value="high-low">Price: High to Low</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="property-grid" id="allPropertiesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE 3: MORTGAGE STUDIO
+       ========================================================================== -->
+  <section id="page-calculator" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Private Wealth & Financing Suite</span>
+        <h2 class="section-title">Institutional Mortgage Studio</h2>
+        <p class="section-desc">Structure multi-million dollar acquisitions with precision. Real-time principal amortization, multi-currency modeling, and institutional tax estimations.</p>
+      </div>
+
+      <div class="calc-currency-bar">
+        <span class="currency-label"><i class="fa-solid fa-coins" style="color: var(--accent);"></i> Base Currency:</span>
+        <div class="currency-pills">
+          <button class="currency-pill active" onclick="setCalcCurrency('USD', '$', 1, this)">USD ($)</button>
+          <button class="currency-pill" onclick="setCalcCurrency('EUR', '€', 0.92, this)">EUR (€)</button>
+          <button class="currency-pill" onclick="setCalcCurrency('GBP', '£', 0.79, this)">GBP (£)</button>
+          <button class="currency-pill" onclick="setCalcCurrency('AED', 'AED ', 3.67, this)">AED (د.إ)</button>
+        </div>
+      </div>
+
+      <div class="luxury-calc-grid">
+        <div class="calc-controls-card">
+          <div class="card-head-row">
+            <h3><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> Financing Parameters</h3>
+            <button class="btn-reset-calc" onclick="resetCalculatorDefaults()"><i class="fa-solid fa-rotate-left"></i> Reset Defaults</button>
+          </div>
+
+          <div class="calc-group-block">
+            <div class="calc-label-flex">
+              <label>Purchase Price</label>
+              <span class="calc-display-value" id="calcPriceVal">$14,850,000</span>
+            </div>
+            <input type="range" class="luxury-range" id="calcPriceRange" min="1000000" max="50000000" step="250000" value="14850000" oninput="updateMortgageStudio()">
+            <div class="range-sub-bounds">
+              <span>$1.0M</span>
+              <span>$25.0M</span>
+              <span>$50.0M+</span>
+            </div>
+          </div>
+
+          <div class="calc-group-block">
+            <div class="calc-label-flex">
+              <label>Down Payment (<span id="calcDownPercentLabel">25%</span>)</label>
+              <span class="calc-display-value" id="calcDownAmountVal">$3,712,500</span>
+            </div>
+            <input type="range" class="luxury-range" id="calcDownRange" min="10" max="60" step="5" value="25" oninput="updateMortgageStudio()">
+            <div class="range-sub-bounds">
+              <span>10% (Min)</span>
+              <span>25% (Standard)</span>
+              <span>60% (High Equity)</span>
+            </div>
+          </div>
+
+          <div class="calc-group-block">
+            <div class="calc-label-flex">
+              <label>Annual Interest Rate (Fixed)</label>
+              <span class="calc-display-value" id="calcRateVal">5.85%</span>
+            </div>
+            <input type="range" class="luxury-range" id="calcRateRange" min="2.5" max="11.0" step="0.05" value="5.85" oninput="updateMortgageStudio()">
+            <div class="range-sub-bounds">
+              <span>2.50% (Prime)</span>
+              <span>5.85% (Current)</span>
+              <span>11.0%</span>
+            </div>
+          </div>
+
+          <div class="calc-group-block">
+            <label class="block-title-label">Loan Term (Amortization Horizon)</label>
+            <div class="tenure-button-group">
+              <button class="tenure-btn" onclick="setLoanTenure(15, this)">15 Years</button>
+              <button class="tenure-btn" onclick="setLoanTenure(20, this)">20 Years</button>
+              <button class="tenure-btn active" onclick="setLoanTenure(30, this)">30 Years (Standard)</button>
+            </div>
+          </div>
+
+          <div class="calc-advanced-box">
+            <div class="advanced-header" onclick="toggleCalcAdvanced(this)">
+              <span><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> Escrow, Tax & HOA Maintenance</span>
+              <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="advanced-body">
+              <div class="form-row-2" style="margin-top: 1rem;">
+                <div class="form-group">
+                  <label>Annual Property Tax Rate (%)</label>
+                  <input type="number" id="calcTaxRateInput" value="1.15" step="0.05" oninput="updateMortgageStudio()">
+                </div>
+                <div class="form-group">
+                  <label>Annual Insurance (<span class="curr-sym">$</span>)</label>
+                  <input type="number" id="calcInsuranceInput" value="28000" step="1000" oninput="updateMortgageStudio()">
+                </div>
+              </div>
+              <div class="form-group" style="margin-top: 0.8rem;">
+                <label>Monthly Private HOA / Estate Maintenance (<span class="curr-sym">$</span>)</label>
+                <input type="number" id="calcHoaInput" value="3500" step="100" oninput="updateMortgageStudio()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-results-card">
+          <div class="total-monthly-banner">
+            <span class="monthly-tag">Estimated Monthly Outlay</span>
+            <h2 class="monthly-mega-number" id="resTotalMonthly">$79,850</h2>
+            <p class="monthly-sub-text">Includes Principal, Interest, Private Escrow Taxes & HOA</p>
+          </div>
+
+          <div class="visual-breakdown-wrapper">
+            <div class="breakdown-donut-container">
+              <div class="css-donut-chart" id="calcDonutChart">
+                <div class="donut-center">
+                  <span class="donut-center-title">Loan Ratio</span>
+                  <span class="donut-center-pct" id="donutLoanRatio">75%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="breakdown-legend-list">
+              <div class="legend-row">
+                <span class="legend-indicator" style="background: var(--accent);"></span>
+                <span class="legend-label">Principal & Interest</span>
+                <strong class="legend-val" id="resPI">$65,680</strong>
+              </div>
+              <div class="legend-row">
+                <span class="legend-indicator" style="background: #3b82f6;"></span>
+                <span class="legend-label">Property Taxes</span>
+                <strong class="legend-val" id="resTaxes">$14,230</strong>
+              </div>
+              <div class="legend-row">
+                <span class="legend-indicator" style="background: #10b981;"></span>
+                <span class="legend-label">Homeowners Insurance</span>
+                <strong class="legend-val" id="resInsurance">$2,333</strong>
+              </div>
+              <div class="legend-row">
+                <span class="legend-indicator" style="background: #a855f7;"></span>
+                <span class="legend-label">HOA / Estate Services</span>
+                <strong class="legend-val" id="resHOA">$3,500</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="lifetime-summary-grid">
+            <div class="lifetime-item">
+              <span>Total Borrowed</span>
+              <strong id="resLoanAmount">$11,137,500</strong>
+            </div>
+            <div class="lifetime-item">
+              <span>Total Interest Paid</span>
+              <strong id="resTotalInterest">$12,507,300</strong>
+            </div>
+            <div class="lifetime-item">
+              <span>Lifetime P&I Total</span>
+              <strong id="resTotalLoanCost">$23,644,800</strong>
+            </div>
+          </div>
+
+          <div class="calc-action-buttons">
+            <button class="btn-gold" style="width: 100%; justify-content: center;" onclick="openMortgagePreApproval()">
+              <i class="fa-solid fa-building-columns"></i> Request Institutional Pre-Approval
+            </button>
+            <button class="btn-gold btn-outline" style="width: 100%; justify-content: center; margin-top: 0.8rem;" onclick="showAmortizationSchedule()">
+              <i class="fa-solid fa-table-list"></i> View 30-Year Amortization Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="amortization-table-wrapper" id="amortizationWrapper">
+        <div class="amort-header-flex">
+          <div>
+            <h3><i class="fa-solid fa-chart-line" style="color: var(--accent);"></i> Annual Amortization Schedule</h3>
+            <p>Projected equity acceleration and principal balance reduction over the loan lifespan.</p>
+          </div>
+          <button class="btn-gold btn-outline" style="padding: 0.5rem 1rem; font-size: 0.82rem;" onclick="printMortgageSummary()">
+            <i class="fa-solid fa-print"></i> Export Summary PDF
+          </button>
+        </div>
+        <div class="amort-table-scroll">
+          <table class="luxury-amort-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Annual Payment</th>
+                <th>Principal Paid</th>
+                <th>Interest Paid</th>
+                <th>Remaining Balance</th>
+                <th>Equity Built</th>
+              </tr>
+            </thead>
+            <tbody id="amortizationTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE 4: ABOUT US
+       ========================================================================== -->
+  <section id="page-about" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">The House of LuxeVista</span>
+        <h2 class="section-title">The Quintessence of Ultra-Prime Real Estate</h2>
+        <p class="section-desc">Pioneering confidential multi-million dollar acquisitions, private island transactions, and architectural legacy residences for the world's most discerning families.</p>
+      </div>
+
+      <div class="about-hero-grid">
+        <div class="about-main-visual">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" alt="Private Luxury Estate">
+          <div class="visual-luxury-badge">
+            <div class="badge-number">$4.8B+</div>
+            <div class="badge-label">Curated Private Volume</div>
+          </div>
+        </div>
+
+        <div class="about-story-box">
+          <span class="gold-accent-text">Est. 2012 &bull; New York &bull; London &bull; Monaco</span>
+          <h3>Where Architectural Grandeur Meets Absolute Discretion</h3>
+          <p>Founded on the principles of Swiss private banking privacy and bespoke haute horlogerie craftsmanship, LuxeVista operates not merely as a brokerage, but as a confidential advisory house for ultra-high-net-worth individuals, sovereign funds, and royalty.</p>
+          <p>Every residence in our private ledger undergoes rigorous architectural pedigree review, structural engineering analysis, and legal vetting before private presentation.</p>
+
+          <div class="about-quick-metrics">
+            <div class="metric-block">
+              <strong>98%</strong>
+              <span>Off-Market Deals</span>
+            </div>
+            <div class="metric-block">
+              <strong>14+</strong>
+              <span>Years of Heritage</span>
+            </div>
+            <div class="metric-block">
+              <strong>42</strong>
+              <span>Global Sovereign Markets</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-sub-section">
+        <div class="section-title-wrapper" style="margin-bottom: 2.5rem;">
+          <span class="subtitle-badge">Our Pillars</span>
+          <h2 class="section-title" style="font-size: 2.2rem;">The LuxeVista Standard</h2>
+        </div>
+
+        <div class="pillars-grid">
+          <div class="pillar-card">
+            <div class="pillar-icon"><i class="fa-solid fa-user-shield"></i></div>
+            <h4>Absolute NDA & Discretion</h4>
+            <p>Complete buyer and seller confidentiality backed by bank-grade encrypted data vaults and private legal representation.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon"><i class="fa-solid fa-compass-drafting"></i></div>
+            <h4>Architectural Curation</h4>
+            <p>We only represent properties sculpted by Pritzker-prize laureates and world-class master architects.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon"><i class="fa-solid fa-helicopter"></i></div>
+            <h4>Helicopter & Yacht Access</h4>
+            <p>Private transfers, tarmac-to-villa helicopter logistics, and yacht berth inspections arranged effortlessly for private viewings.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            <h4>Cross-Border Escrow</h4>
+            <p>Full-service global escrow counsel, tax structuring, and multi-currency transaction execution in 12 global financial hubs.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="founder-spotlight-card">
+        <div class="founder-img-side">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" alt="Founder Lord Sterling">
+        </div>
+        <div class="founder-content-side">
+          <span class="subtitle-badge" style="background: rgba(255,255,255,0.1); color: var(--accent); border-color: rgba(212,175,55,0.4);">Founder's Perspective</span>
+          <h2>"True luxury is not about excess. It is about architectural perfection, timeless serenity, and uncompromised privacy."</h2>
+          <p class="founder-bio">"When we created LuxeVista, we eliminated the transactional noise of ordinary real estate. We built a private sanctum where the world's most exceptional homes are matched with the world's most visionary owners."</p>
+          <div class="founder-signature-wrap">
+            <div class="founder-name">Lord Arthur Sterling, KBE</div>
+            <div class="founder-title">Founder & Managing Principal &bull; LuxeVista Global Holdings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE 5: ADVISORS
+       ========================================================================== -->
+  <section id="page-agents" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Senior Client Directorate</span>
+        <h2 class="section-title">The Private Advisory Council</h2>
+        <p class="section-desc">Discreet fiduciary partners managing monumental portfolio acquisitions across the world's most prestigious jurisdictions.</p>
+      </div>
+
+      <div class="advisor-stats-highlight">
+        <div class="stat-box">
+          <h3>$4.8 Billion+</h3>
+          <p>Combined Career Volume</p>
+        </div>
+        <div class="stat-box">
+          <h3>100%</h3>
+          <p>Confidential Client Records</p>
+        </div>
+        <div class="stat-box">
+          <h3>14+ Countries</h3>
+          <p>Direct Sovereign Jurisdiction</p>
+        </div>
+        <div class="stat-box">
+          <h3><i class="fa-solid fa-shield-halved" style="color: var(--accent);"></i> Level 3</h3>
+          <p>Bank-Grade NDA Protocols</p>
+        </div>
+      </div>
+
+      <div class="advisor-category-tabs">
+        <button class="advisor-tab active" onclick="filterAdvisors('all', this)">All Partners</button>
+        <button class="advisor-tab" onclick="filterAdvisors('North America', this)">North America</button>
+        <button class="advisor-tab" onclick="filterAdvisors('Europe', this)">Europe & UK</button>
+        <button class="advisor-tab" onclick="filterAdvisors('Middle East', this)">Middle East</button>
+      </div>
+
+      <div class="advisors-directory-grid" id="advisorsGrid"></div>
+
+      <div class="private-advisory-banner">
+        <div>
+          <h3>Require Strict Off-Market Discretion?</h3>
+          <p>Connect directly with our Senior Managing Partners for private ledger access under certified bilateral NDA agreements.</p>
+        </div>
+        <button class="btn-gold" onclick="navigateTo('consultation')">
+          <i class="fa-solid fa-key"></i> Request Private Access
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PAGE 6: CONTACT US
+       ========================================================================== -->
+  <section id="page-contact" class="page-section">
+    <div class="container">
+      <div class="section-title-wrapper">
+        <span class="subtitle-badge">Get In Touch</span>
+        <h2 class="section-title">Contact LuxeVista Global</h2>
+        <p class="section-desc">Reach out to our global headquarters, advisory desks, or client service specialists.</p>
+      </div>
+
+      <div class="contact-wrapper">
+        <div class="contact-info-side">
+          <div>
+            <h3>Global Headquarters</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Connecting discerning investors with extraordinary architecture globally.</p>
+
+            <div class="contact-item">
+              <i class="fa-solid fa-location-dot"></i>
+              <div>
+                <h5>New York Head Office</h5>
+                <p>740 Park Avenue, 18th Floor, New York, NY 10021</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <i class="fa-solid fa-phone"></i>
+              <div>
+                <h5>General Inquiries & Helpline</h5>
+                <p>+1 (800) 489-LUXE &nbsp;|&nbsp; +1 (212) 555-0199</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <i class="fa-solid fa-envelope"></i>
+              <div>
+                <h5>Official Email Inquiries</h5>
+                <p>inquiries@luxevista.com &nbsp;|&nbsp; press@luxevista.com</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <p style="color: var(--accent); font-weight: 700;">Office Operating Hours:</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Monday - Saturday: 8:30 AM - 8:30 PM EST<br>Sunday: By Executive Appointment Only</p>
+          </div>
+        </div>
+
+        <div class="contact-form">
+          <form onsubmit="handleGeneralContactSubmit(event)">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" required placeholder="e.g. Robert Sterling">
+              </div>
+              <div class="form-group">
+                <label>Your Email Address</label>
+                <input type="email" required placeholder="robert@example.com">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Contact Phone</label>
+                <input type="tel" required placeholder="+1 (555) 000-1122">
+              </div>
+              <div class="form-group">
+                <label>Inquiry Subject</label>
+                <select required>
+                  <option value="General Information">General Information</option>
+                  <option value="Listing a Luxury Property">Listing a Luxury Property</option>
+                  <option value="Off-Market Portfolio Access">Off-Market Portfolio Access</option>
+                  <option value="Press & Media Relations">Press & Media Relations</option>
+                  <option value="Career & Partnerships">Career & Partnerships</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Message</label>
+              <textarea placeholder="Write your message or inquiry here..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-gold" style="width: 100%; justify-content: center;">
+              <i class="fa-solid fa-paper-plane"></i> Send Direct Message
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="faq-container">
+        <h3 style="text-align: center; margin-bottom: 2rem; color: var(--primary);">Frequently Asked Questions</h3>
+
+        <div class="faq-item">
+          <div class="faq-header" onclick="toggleFaq(this)">
+            How do I schedule an in-person villa walkthrough?
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            You can visit our <strong>Private Access</strong> page to choose your preferred villa, date, and time slot, or call our concierge desk directly at +1 (800) 489-LUXE.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header" onclick="toggleFaq(this)">
+            Do you manage international acquisitions and legal paperwork?
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Yes. We handle end-to-end legal verification, cross-border escrow accounts, power of attorney, and discreet currency conversions for international buyers.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header" onclick="toggleFaq(this)">
+            What are off-market luxury estates?
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Off-market properties are ultra-exclusive listings not publicly advertised to protect owner privacy. Contact our team to request verified VIP portfolio access.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       VIP SAVED FAVORITES / WISHLIST DRAWER MODAL
+       ========================================================================== -->
+  <div class="fav-modal-overlay" id="favModal">
+    <div class="fav-modal-drawer">
+      <div class="fav-drawer-header">
+        <div>
+          <h3><i class="fa-solid fa-heart" style="color: #ef4444;"></i> Saved Luxury Portfolio</h3>
+          <p id="favModalCountSubtitle">0 residences curated in your private wishlist</p>
+        </div>
+        <button class="fav-drawer-close" onclick="closeFavoritesModal()">&times;</button>
+      </div>
+
+      <div class="fav-drawer-content" id="favModalList"></div>
+
+      <div class="fav-drawer-footer">
+        <button class="btn-gold" style="width: 100%; justify-content: center;" onclick="closeFavoritesModal(); navigateTo('consultation');">
+          <i class="fa-solid fa-key"></i> Request Private Access For Wishlist
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Property Quick View Modal -->
+  <div class="modal-overlay" id="propertyModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Global Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div>
+        <a href="#" class="logo" style="margin-bottom: 1rem;">
+          <i class="fa-solid fa-city"></i> LUXE<span>VISTA</span>
+        </a>
+        <p>Providing bespoke real estate acquisitions and luxury lifestyle advisory services worldwide.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#" onclick="navigateTo('home')">Home</a></li>
+          <li><a href="#" onclick="navigateTo('portfolio')">Villa Portfolio</a></li>
+          <li><a href="#" onclick="navigateTo('consultation')">Private Access</a></li>
+          <li><a href="#" onclick="navigateTo('properties')">Properties</a></li>
+          <li><a href="#" onclick="navigateTo('about')">About Us</a></li>
+          <li><a href="#" onclick="navigateTo('agents')">Advisors</a></li>
+          <li><a href="#" onclick="navigateTo('contact')">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Residences</h4>
+        <ul>
+          <li><a href="#" onclick="navigateTo('portfolio')">Coastal Villas</a></li>
+          <li><a href="#" onclick="navigateTo('portfolio')">Sky Penthouses</a></li>
+          <li><a href="#" onclick="navigateTo('portfolio')">Alpine Chalets</a></li>
+          <li><a href="#" onclick="navigateTo('portfolio')">Mediterranean Manors</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Newsletter</h4>
+        <p style="font-size: 0.85rem; margin-bottom: 1rem;">Subscribe to receive off-market luxury property alerts.</p>
+        <div class="footer-newsletter-wrap">
+          <input type="email" placeholder="Your email...">
+          <button class="btn-gold">Join</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 LuxeVista Real Estate Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- External JS -->
+  <script src="script.js"></script>
+</body>
+</html>
